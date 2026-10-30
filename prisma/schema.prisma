@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+model Patient {
+  id Int @id @default(autoincrement())
+  firstname String @map("first_name")
+  lastname String @map("last_name")
+  patronymic String?
+  sex Sex
+  phoneNumber String @unique @map("phone_number")
+  receptions Reception[]
+
+  @@map("patients")
+}
+
+model Doctor {
+  id Int @id @default(autoincrement())
+  firstname String @map("first_name")
+  lastname String @map("last_name")
+  patronymic String?
+  sex Sex
+  specialization DoctorSpecialization @relation(fields: [specializationId], references: [id])
+  specializationId Int @map("specialization_id")
+  slots Slot[]
+
+  @@map("doctors")
+}
+
+model DoctorSpecialization {
+  id Int @id @default(autoincrement())
+  name String
+  doctors Doctor[]
+
+  @@map("doctor_specializations")
+}
+
+model Reception {
+  id Int @id @default(autoincrement())
+  patient Patient @relation(fields: [patiendId], references: [id])
+  patiendId Int @map("patient_id")
+  slot Slot @relation(fields: [slotId], references: [id])
+  slotId Int @map("slot_id")
+  isInitialReception Boolean @map("is_initial_reception")
+
+  @@map("receptions")
+}
+
+model Slot {
+  id Int @id @default(autoincrement())
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+  doctorId Int @unique @map("doctor_id")
+  reception Reception[]
+  slotDate DateTime @unique @db.Date @map("slot_date")
+  startTime DateTime @unique @db.Time @map("start_time")
+
+  @@map("slots")
+}
