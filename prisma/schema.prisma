@@ -82,12 +82,13 @@ model Reception {
 model Slot {
   id Int @id @default(autoincrement())
   doctor Doctor @relation(fields: [doctorId], references: [id])
-  doctorId Int @unique @map("doctor_id")
+  doctorId Int @map("doctor_id")
   reception Reception[]
-  slotDate DateTime @unique @db.Date @map("slot_date")
-  startTime DateTime @unique @db.Time @map("start_time")
-  endTime DateTime @unique @db.Time @map("end_time")
+  slotDate DateTime @db.Date @map("slot_date")
+  startTime DateTime @db.Time @map("start_time")
+  endTime DateTime @db.Time @map("end_time")
   status SlotStatus
 
+  @@unique([doctorId, slotDate, startTime, endTime])
   @@map("slots")
 }
