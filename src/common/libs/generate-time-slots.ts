@@ -86,6 +86,8 @@ export function generateTimeSlots(startDate: string, endDate: string, startTime:
 
   const slots = [];
 
+  const timezoneOffset = new Date().getTimezoneOffset();
+
   for (
     let currentDate = firstDate;
     currentDate <= lastDate;
@@ -100,8 +102,8 @@ export function generateTimeSlots(startDate: string, endDate: string, startTime:
     ) {
       slots.push({
         slotDate: new Date(slotDate),
-        startTime: new Date(`${slotDate} ${formatTime(minute)}`),
-        endTime: new Date(`${slotDate} ${formatTime(minute + SLOT_LENGTH_IN_MINUTES)}`),
+        startTime: new Date(`${slotDate} ${formatTime(minute - timezoneOffset)}`),
+        endTime: new Date(`${slotDate} ${formatTime(minute - timezoneOffset + SLOT_LENGTH_IN_MINUTES)}`),
       });
     }
   }
