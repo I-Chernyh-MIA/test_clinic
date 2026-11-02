@@ -19,7 +19,7 @@ import { CreatePatientDto } from './dto/create-patient.dto.js';
 import { PatchPatientDto } from './dto/patch-patient.dto.js';
 
 @Controller('/patients')
-export class PatientController {
+export class PatientsController {
   constructor(private readonly service: PatientsService) {}
 
   @Post()
