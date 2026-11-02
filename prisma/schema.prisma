@@ -15,17 +15,29 @@ datasource db {
   provider = "mysql"
 }
 
-enum Sex {
-  MALE
-  FEMALE
+enum Gender {
+  male
+  female
+}
+
+enum ReceptionStatus {
+  free
+  pending
+  confirmed
+  cancelled
+}
+
+enum SlotStatus {
+  free
+  occupied
 }
 
 model Patient {
   id Int @id @default(autoincrement())
-  firstname String @map("first_name")
-  lastname String @map("last_name")
+  lastName String @map("last_name")
+  firstName String @map("first_name")
   patronymic String?
-  sex Sex
+  gender Gender
   phoneNumber String @unique @map("phone_number")
   receptions Reception[]
 
@@ -34,23 +46,24 @@ model Patient {
 
 model Doctor {
   id Int @id @default(autoincrement())
-  firstname String @map("first_name")
-  lastname String @map("last_name")
+  lastName String @map("last_name")
+  firstName String @map("first_name")
   patronymic String?
-  sex Sex
-  specialization DoctorSpecialization @relation(fields: [specializationId], references: [id])
-  specializationId Int @map("specialization_id")
+  gender Gender
+  specialty DoctorSpecialty @relation(fields: [specialtyId], references: [id])
+  specialtyId Int @map("specialty_id")
+  price Decimal @db.Decimal(8, 2)
   slots Slot[]
 
   @@map("doctors")
 }
 
-model DoctorSpecialization {
+model DoctorSpecialty {
   id Int @id @default(autoincrement())
   name String
   doctors Doctor[]
 
-  @@map("doctor_specializations")
+  @@map("doctor_specialties")
 }
 
 model Reception {
@@ -59,7 +72,9 @@ model Reception {
   patiendId Int @map("patient_id")
   slot Slot @relation(fields: [slotId], references: [id])
   slotId Int @map("slot_id")
-  isInitialReception Boolean @map("is_initial_reception")
+  isInitial Boolean @map("is_initial")
+  status SlotStatus
+  datetimeModified DateTime @map("datetime_modified")
 
   @@map("receptions")
 }
@@ -71,6 +86,8 @@ model Slot {
   reception Reception[]
   slotDate DateTime @unique @db.Date @map("slot_date")
   startTime DateTime @unique @db.Time @map("start_time")
+  endTime DateTime @unique @db.Time @map("end_time")
+  status SlotStatus
 
   @@map("slots")
 }
