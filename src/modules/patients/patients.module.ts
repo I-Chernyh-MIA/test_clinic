@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { PatientController } from './patients.controller.js';
-import { PatientService } from './patients.service.js';
-import { PatientRepository } from './patients.repository.js';
+import { PatientsService } from './patients.service.js';
+import { PatientsRepository } from './patients.repository.js';
 import { PrismaModule } from '../../database/prisma.module.js';
 
 @Module({
   imports: [PrismaModule],
   controllers: [PatientController],
-  providers: [PatientService, PatientRepository],
-  exports: [PatientRepository],
+  providers: [PatientsService, PatientsRepository],
+  exports: [PatientsRepository],
 })
-export class PatientModule {}
+export class PatientsModule {}

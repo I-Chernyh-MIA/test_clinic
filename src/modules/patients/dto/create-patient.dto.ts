@@ -6,8 +6,8 @@ import {
   IsString,
 } from 'class-validator';
 
-import { gender } from '../types/index.js';
-import type { GenderType } from '../types/index.js';
+import { gender } from '../../../common/types/index.js';
+import type { GenderType } from '../../../common/types/index.js';
 
 export class CreatePatientDto {
   @IsString()

@@ -1,32 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { PatientRepository } from './patients.repository.js';
+import { PatientsRepository } from './patients.repository.js';
 import { CreatePatientDto } from './dto/create-patient.dto.js';
-import { CreatedPatientDto } from './dto/created-patient.dto.js';
 import { PatchPatientDto } from './dto/patch-patient.dto.js';
 
 @Injectable()
-export class PatientService {
-  constructor(private readonly patientRepository: PatientRepository) {}
+export class PatientsService {
+  constructor(private readonly repository: PatientsRepository) {}
 
   async create(data: CreatePatientDto) {
-    const result = await this.patientRepository.create(data);
+    const result = await this.repository.create(data);
 
     if (!result) {
       return result;
     }
 
-    return { ...result, createdAt: new Date() } as CreatedPatientDto;
+    return { ...result, createdAt: new Date() };
   }
 
   getByPhone(phone: string) {
-    return this.patientRepository.getByPhone(phone);
+    return this.repository.getByPhone(phone);
   }
 
   getById(id: number) {
-    return this.patientRepository.getById(id);
+    return this.repository.getById(id);
   }
 
   patch(id: number, data: PatchPatientDto) {
-    return this.patientRepository.patch(id, data);
+    return this.repository.patch(id, data);
   }
 }

@@ -5,7 +5,7 @@ import { PatchPatientDto } from './dto/patch-patient.dto.js';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 
 @Injectable()
-export class PatientRepository {
+export class PatientsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
