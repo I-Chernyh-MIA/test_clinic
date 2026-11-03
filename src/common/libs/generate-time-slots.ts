@@ -4,8 +4,10 @@ const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
 const SLOT_LENGTH_IN_MINUTES = 30;
 
 function parseDate(value: string, parameterName: string) {
-  if (typeof value !== "string") {
-    throw new TypeError(`${parameterName} must be a string in YYYY-MM-DD format`);
+  if (typeof value !== 'string') {
+    throw new TypeError(
+      `${parameterName} must be a string in YYYY-MM-DD format`,
+    );
   }
 
   const match = DATE_PATTERN.exec(value);
@@ -33,7 +35,7 @@ function parseDate(value: string, parameterName: string) {
 }
 
 function parseTime(value: string, parameterName: string) {
-  if (typeof value !== "string") {
+  if (typeof value !== 'string') {
     throw new TypeError(`${parameterName} must be a string in HH:MM format`);
   }
 
@@ -55,38 +57,51 @@ function formatDate(timestamp: number) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
-function formatTime(totalMinutes: number) {
-  const hour = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
-  const minute = String(totalMinutes % 60).padStart(2, "0");
-  return `${hour}:${minute}`;
+function formatTime(currentDate: string, totalMinutes: number) {
+  const date = new Date(currentDate);
+  date.setHours(Math.floor(totalMinutes / 60), totalMinutes % 60);
+
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+
+  return `${hour}:${minute}:00`;
 }
 
 /**
- * Generate 30-minute time slots for every date in an inclusive date range.
+ * Генерирует 30-минутные слоты для каждой даты от и до в указанном промежутке.
  *
- * Dates use YYYY-MM-DD and times use HH:MM.
+ * Дата использует формат `YYYY-MM-DD`, время - `HH:MM`.
+ * 
+ * @throws { RangeError } startDate не должна быть позднее endDate, и startTime не должна быть позднее endTime.
  */
-export function generateTimeSlots(startDate: string, endDate: string, startTime: string, endTime: string) {
-  const firstDate = parseDate(startDate, "startDate");
-  const lastDate = parseDate(endDate, "endDate");
-  const firstMinute = parseTime(startTime, "startTime");
-  const lastMinute = parseTime(endTime, "endTime");
+export function generateTimeSlots(
+  startDate: string,
+  endDate: string,
+  startTime: string,
+  endTime: string,
+) {
+  const firstDate = parseDate(startDate, 'startDate');
+  const lastDate = parseDate(endDate, 'endDate');
+  const firstMinute = parseTime(startTime, 'startTime');
+  const lastMinute = parseTime(endTime, 'endTime');
 
   if (firstDate > lastDate) {
-    throw new RangeError("startDate must not be after endDate");
+    throw new RangeError('Начальная дата не должна быть позже конечной');
   }
 
   if (firstMinute > lastMinute) {
-    throw new RangeError("startTime must not be after endTime");
+    throw new RangeError('Начальное время не должно быть позжне конечного');
   }
 
   if ((lastMinute - firstMinute) % SLOT_LENGTH_IN_MINUTES !== 0) {
-    throw new RangeError("The time range must be divisible into 30-minute slots");
+    throw new RangeError(
+      'Разница между начальным и конечным временем должна быть кратна 30 минутам',
+    );
   }
 
   const slots = [];
 
-  const timezoneOffset = new Date().getTimezoneOffset();
+  const timezoneOffset = (new Date().getTimezoneOffset() / 60) * -1;
 
   for (
     let currentDate = firstDate;
@@ -101,12 +116,12 @@ export function generateTimeSlots(startDate: string, endDate: string, startTime:
       minute += SLOT_LENGTH_IN_MINUTES
     ) {
       slots.push({
-        slotDate: new Date(slotDate),
-        startTime: new Date(`${slotDate} ${formatTime(minute - timezoneOffset)}`),
-        endTime: new Date(`${slotDate} ${formatTime(minute - timezoneOffset + SLOT_LENGTH_IN_MINUTES)}`),
+        slotDate: slotDate,
+        startTime: formatTime(slotDate, minute),
+        endTime: formatTime(slotDate, minute + SLOT_LENGTH_IN_MINUTES),
       });
     }
   }
 
-  return slots;
+  return { slots, timezoneOffset };
 }

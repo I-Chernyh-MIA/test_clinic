@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service.js';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
+import { SlotStatus } from '../../generated/prisma/enums.js';
+import { TransactionClient } from '../../generated/prisma/internal/prismaNamespace.js';
 
 @Injectable()
 export class SlotsRepository {
@@ -31,5 +33,26 @@ export class SlotsRepository {
     }
 
     return null;
+  }
+
+  getById(id: number) {
+    return this.prisma.slot.findUnique({ where: { id } });
+  }
+
+  async patchSlotStatus(id: number, status: SlotStatus, tx?: TransactionClient) {
+    try {
+      const update = tx ? tx.slot.update : this.prisma.slot.update;
+      const result = await update({ where: { id }, data: { status } });
+
+      return result;
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2025') {
+          return null;
+        }
+      }
+
+      return false;
+    }
   }
 }

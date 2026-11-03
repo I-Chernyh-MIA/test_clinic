@@ -21,7 +21,6 @@ enum Gender {
 }
 
 enum ReceptionStatus {
-  free
   pending
   confirmed
   cancelled
@@ -68,14 +67,15 @@ model DoctorSpecialty {
 
 model Reception {
   id Int @id @default(autoincrement())
-  patient Patient @relation(fields: [patiendId], references: [id])
-  patiendId Int @map("patient_id")
+  patient Patient @relation(fields: [patientId], references: [id])
+  patientId Int @map("patient_id")
   slot Slot @relation(fields: [slotId], references: [id])
   slotId Int @map("slot_id")
   isInitial Boolean @map("is_initial")
-  status SlotStatus
+  status ReceptionStatus
   datetimeModified String @map("datetime_modified")
 
+  @@unique([patientId, slotId, status])
   @@map("receptions")
 }
 
