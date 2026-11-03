@@ -17,14 +17,22 @@ export class SlotsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createReception(@Body() body: CreateSlotsDto) {
-    const result = await this.service.create(body);
+    let result;
+
+    try {
+      result = await this.service.create(body);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new BadRequestException(e.message);
+      }
+    }
 
     if (result === null) {
       throw new BadRequestException(
         'Были отправлены некорректные данные о слотах',
       );
     } else if (!result) {
-      throw new ConflictException('Слоты на указанный промежуток времени уже существуют');
+      throw new ConflictException('Слоты в указанном промежутке времени уже существуют');
     }
 
     return result;

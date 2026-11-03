@@ -74,7 +74,7 @@ model Reception {
   slotId Int @map("slot_id")
   isInitial Boolean @map("is_initial")
   status SlotStatus
-  datetimeModified DateTime @map("datetime_modified")
+  datetimeModified String @map("datetime_modified")
 
   @@map("receptions")
 }
@@ -84,9 +84,10 @@ model Slot {
   doctor Doctor @relation(fields: [doctorId], references: [id])
   doctorId Int @map("doctor_id")
   reception Reception[]
-  slotDate DateTime @db.Date @map("slot_date")
-  startTime DateTime @db.Time @map("start_time")
-  endTime DateTime @db.Time @map("end_time")
+  slotDate String @map("slot_date")
+  startTime String @map("start_time")
+  endTime String @map("end_time")
+  timezone Int @db.TinyInt @default(0)
   status SlotStatus
 
   @@unique([doctorId, slotDate, startTime, endTime])

@@ -8,13 +8,15 @@ export class SlotsRepository {
 
   async create(
     doctorId: number,
-    slots: { slotDate: Date; startTime: Date; endTime: Date }[],
+    slots: { slotDate: string; startTime: string; endTime: string }[],
+    timezone: number,
   ) {
     try {
       const result = await this.prisma.slot.createMany({
         data: slots.map((value) => ({
           doctorId,
           ...value,
+          timezone,
           status: 'free',
         })),
       });

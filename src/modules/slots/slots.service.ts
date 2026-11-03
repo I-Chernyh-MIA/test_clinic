@@ -7,18 +7,28 @@ import { generateTimeSlots } from '../../common/libs/generate-time-slots.js';
 export class SlotsService {
   constructor(private readonly repository: SlotsRepository) {}
 
+  /**
+   * @throws { RangeError }
+   */
   async create(data: CreateSlotsDto) {
-    const {
-      doctorId,
-      dateFrom,
-      dateTo = dateFrom,
-      timeFrom = '09:00',
-      timeTo = '21:00',
-    } = data;
+    const { doctorId, dateFrom, dateTo = dateFrom, timeFrom = '09:00', timeTo = '21:00' } = data;
 
-    const slots = generateTimeSlots(dateFrom, dateTo, timeFrom, timeTo);
+    const datetimeFrom = new Date(`${dateFrom} ${timeFrom}`);
+    const datetimeTo = new Date(`${dateFrom} ${timeTo}`);
 
-    const result = await this.repository.create(doctorId, slots);
+    console.log(datetimeFrom.getHours(), datetimeTo.getHours());
+
+    if (
+      datetimeFrom.getHours() < 9 ||
+      datetimeTo.getHours() > 21 ||
+      (datetimeTo.getHours() >= 21 && datetimeTo.getMinutes() > 0)
+    ) {
+      throw new RangeError('Указанный промежуток вне рабочего времени с 9:00 до 21:00');
+    }
+
+    const { slots, timezoneOffset } = generateTimeSlots(dateFrom, dateTo, timeFrom, timeTo);
+
+    const result = await this.repository.create(doctorId, slots, timezoneOffset);
 
     if (!result) {
       return result;
