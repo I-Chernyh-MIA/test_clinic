@@ -9,6 +9,7 @@ import {
 
 import { gender } from '../../../common/types/index.js';
 import type { GenderType } from '../../../common/types/index.js';
+import { Type } from 'class-transformer';
 
 export class CreateDoctorDto {
   @IsString()
@@ -28,6 +29,7 @@ export class CreateDoctorDto {
   readonly gender: GenderType;
 
   @IsNumber()
+  @Type(() => Number)
   readonly specialtyId: number;
 
   @IsDecimal()

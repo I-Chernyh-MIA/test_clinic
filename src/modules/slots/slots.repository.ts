@@ -3,6 +3,7 @@ import { PrismaService } from '../../database/prisma.service.js';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { SlotStatus } from '../../generated/prisma/enums.js';
 import { TransactionClient } from '../../generated/prisma/internal/prismaNamespace.js';
+import { GetSlotsQueryDto } from './dto/get-slots-query.dto.js';
 
 @Injectable()
 export class SlotsRepository {
@@ -10,7 +11,7 @@ export class SlotsRepository {
 
   async create(
     doctorId: number,
-    slots: { slotDate: string; startTime: string; endTime: string }[],
+    slots: { slotDate: Date; startTime: Date; endTime: Date }[],
     timezone: number,
   ) {
     try {
@@ -26,9 +27,11 @@ export class SlotsRepository {
       return result;
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') {
-          return false;
-        }
+        return e.code;
+      }
+
+      if (e instanceof Error) {
+        throw e;
       }
     }
 
@@ -54,5 +57,37 @@ export class SlotsRepository {
 
       return false;
     }
+  }
+
+  async getByFilter(data: GetSlotsQueryDto) {
+    const { from, to = from, doctorId, status } = data;
+
+    const includeStatus = status === 'all' ? {} : { status };
+
+    const items = await this.prisma.slot.findMany({
+      where: {
+        ...includeStatus,
+        doctorId,
+        slotDate: {
+          gte: new Date(from),
+          lte: new Date(to),
+        },
+      },
+      include: {
+        doctor: {
+          include: {
+            specialty: true,
+          },
+          omit: {
+            specialtyId: true,
+          },
+        },
+      },
+      omit: {
+        doctorId: true,
+      },
+    });
+
+    return { items, total: items.length };
   }
 }

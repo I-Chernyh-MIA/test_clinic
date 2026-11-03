@@ -35,11 +35,7 @@ export class DoctorsRepository {
     return null;
   }
 
-  async getAll(params: {
-    specialtyId?: number;
-    take: number;
-    skip: number;
-  }) {
+  async getAll(params: { specialtyId?: number; take: number; skip: number }) {
     const { specialtyId, take, skip } = params;
 
     const result = await this.prisma.doctor.findMany({
@@ -57,7 +53,9 @@ export class DoctorsRepository {
       },
     });
 
-    const count = await this.prisma.doctor.count();
+    const count = await this.prisma.doctor.count({
+      where: { specialtyId },
+    });
 
     return { items: result, total: count };
   }

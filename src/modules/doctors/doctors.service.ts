@@ -43,7 +43,7 @@ export class DoctorsService {
       items,
       total,
       page,
-      lastPage: Math.ceil(total / itemsPerPage),
+      lastPage: Math.ceil(total / itemsPerPage) || 1,
     };
   }
 

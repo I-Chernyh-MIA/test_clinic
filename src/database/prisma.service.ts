@@ -4,10 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(configService: ConfigService) {
     const adapter = new PrismaMariaDb({
       host: configService.getOrThrow<string>('DATABASE_HOST'),
