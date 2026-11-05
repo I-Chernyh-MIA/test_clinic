@@ -62,29 +62,29 @@ export class SlotsRepository {
   async getByFilter(data: GetSlotsQueryDto) {
     const { from, to = from, doctorId, status } = data;
 
-    const includeStatus = status === 'all' ? {} : { status };
-
-    const items = await this.prisma.slot.findMany({
+    const items = await this.prisma.doctor.findMany({
       where: {
-        ...includeStatus,
-        doctorId,
-        slotDate: {
-          gte: new Date(from),
-          lte: new Date(to),
+        id: doctorId,
+        slots: {
+          some: {
+            status,
+            slotDate: {
+              gte: new Date(from),
+              lte: new Date(to),
+            },
+          },
         },
       },
       include: {
-        doctor: {
-          include: {
-            specialty: true,
-          },
+        specialty: true,
+        slots: {
           omit: {
-            specialtyId: true,
+            doctorId: true,
           },
         },
       },
       omit: {
-        doctorId: true,
+        specialtyId: true,
       },
     });
 

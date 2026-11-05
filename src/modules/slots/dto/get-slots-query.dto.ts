@@ -17,6 +17,6 @@ export class GetSlotsQueryDto {
   readonly doctorId?: number;
 
   @IsOptional()
-  @IsIn([...Object.values(SlotStatus), 'all'])
-  readonly status: SlotStatus | 'all' = 'all';
+  @IsIn(Object.values(SlotStatus))
+  readonly status?: SlotStatus;
 }
