@@ -45,7 +45,7 @@ export class SlotsService {
     return { ...result, createdAt: new Date() };
   }
 
-  async getByFilter(data: GetSlotsQueryDto) {
+  getByFilter(data: GetSlotsQueryDto) {
     return this.repository.getByFilter(data);
   }
 }

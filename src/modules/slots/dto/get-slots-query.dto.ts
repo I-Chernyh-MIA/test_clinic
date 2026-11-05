@@ -1,4 +1,4 @@
-import { IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 import { SlotStatus } from '../../../generated/prisma/enums.js';
 import { Type } from 'class-transformer';
 

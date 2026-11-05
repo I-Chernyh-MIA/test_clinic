@@ -3,6 +3,7 @@ import { ReceptionsRepository } from './receptions.repository.js';
 import { CreateReceptionDto } from './dto/create-reception.dto.js';
 import { SlotsRepository } from '../slots/slots.repository.js';
 import { ServiceError } from '../../common/errors/ServiceError.js';
+import { GetReceptionsQueryDto } from './dto/get-receptions.dto.js';
 
 @Injectable()
 export class ReceptionsService {
@@ -63,5 +64,9 @@ export class ReceptionsService {
     }
 
     return result;
+  }
+
+  getByFilter(data: GetReceptionsQueryDto) {
+    return this.repository.getByFilter(data);
   }
 }

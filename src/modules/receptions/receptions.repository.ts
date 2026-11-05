@@ -4,6 +4,7 @@ import { CreateReceptionDto } from './dto/create-reception.dto.js';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { ReceptionStatus } from '../../generated/prisma/enums.js';
 import { SlotsRepository } from '../slots/slots.repository.js';
+import { GetReceptionsQueryDto } from './dto/get-receptions.dto.js';
 
 const basicOptions = {
   include: {
@@ -26,7 +27,7 @@ export class ReceptionsRepository {
   async create(data: CreateReceptionDto) {
     try {
       const result = await this.prisma.$transaction(async (tx) => {
-        this.slotsRepository.patchSlotStatus(data.slotId, 'occupied', tx);
+        await this.slotsRepository.patchSlotStatus(data.slotId, 'occupied', tx);
 
         const reception = await tx.reception.create({
           data: {
@@ -92,5 +93,58 @@ export class ReceptionsRepository {
     }
 
     return result;
+  }
+
+  async getByFilter(data: GetReceptionsQueryDto) {
+    const { patientId, from, to = from, status } = data;
+
+    let includeDateFilter = {};
+
+    if (from?.length && to?.length) {
+      includeDateFilter = {
+        slot: {
+          slotDate: {
+            gte: new Date(from),
+            lte: new Date(to),
+          },
+        },
+      };
+    }
+
+    const patient = await this.prisma.patient.findUnique({
+      where: {
+        id: patientId,
+        receptions: {
+          some: { status, ...includeDateFilter },
+        },
+      },
+      include: {
+        receptions: {
+          where: {
+            status,
+            ...includeDateFilter,
+          },
+          include: {
+            slot: {
+              include: {
+                doctor: {
+                  include: { specialty: true },
+                  omit: {
+                    specialtyId: true,
+                  },
+                },
+              },
+              omit: { doctorId: true },
+            },
+          },
+          omit: {
+            patientId: true,
+            slotId: true,
+          },
+        },
+      },
+    });
+
+    return patient;
   }
 }
