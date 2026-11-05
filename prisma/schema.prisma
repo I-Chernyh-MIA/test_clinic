@@ -74,8 +74,7 @@ model Reception {
   isInitial Boolean @map("is_initial")
   status ReceptionStatus
   datetimeModified DateTime @db.DateTime() @map("datetime_modified")
-
-  @@unique([patientId, slotId, status])
+  
   @@map("receptions")
 }
 

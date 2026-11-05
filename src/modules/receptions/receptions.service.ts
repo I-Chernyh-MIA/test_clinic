@@ -15,9 +15,18 @@ export class ReceptionsService {
   async create(data: CreateReceptionDto) {
     const slot = await this.slotsRepository.getById(data.slotId);
 
-    if (slot?.status === 'occupied') {
-      throw new ServiceError('conflict', `Слот (ID: ${data.slotId}) уже занят`);
+    if (slot) {
+      if (slot.status === 'occupied') {
+        throw new ServiceError('conflict', `Слот (ID: ${data.slotId}) уже занят`);
+      }
+
+      const slotUtcTimestamp = new Date(slot.slotDate).getTime() + new Date(slot.startTime).getTime() - slot.timezone * 60 * 60 * 1000;
+
+      if (Date.now() > slotUtcTimestamp) {
+        throw new ServiceError('conflict', 'Невозможно записаться на текущий слот, т.к. доступное время для записи уже истекло');
+      }
     }
+
 
     const result = await this.repository.create(data);
 

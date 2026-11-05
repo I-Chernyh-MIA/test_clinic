@@ -89,7 +89,7 @@ export class ReceptionsRepository {
     const result = await this.patchReceptionStatus(id, 'cancelled');
 
     if (result) {
-      this.slotsRepository.patchSlotStatus(result.slotId, 'free');
+      await this.slotsRepository.patchSlotStatus(result.slot.id, 'free');
     }
 
     return result;
