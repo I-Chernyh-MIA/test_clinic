@@ -35,27 +35,53 @@ export class DoctorsRepository {
     return null;
   }
 
-  async getAll(params: { specialtyId?: number; take: number; skip: number }) {
-    const { specialtyId, take, skip } = params;
+  async getAll(params: {
+    specialty?: string | number;
+    fullName?: string;
+    take: number;
+    skip: number;
+  }) {
+    const { specialty, fullName, take, skip } = params;
+
+    const specialtyId = !Number.isNaN(Number(specialty)) && Number(specialty);
+    const specialtyStringified = specialty && !specialtyId && String(specialty);
+
+    const specialtyStatement = specialty && {
+      specialty: {
+        ...((specialtyId && { id: specialtyId }) ||
+          (specialtyStringified && { name: { equals: specialtyStringified } })),
+      },
+    };
+
+    const [lastName, firstName, patronymic] = (fullName ?? '').split(' ', 3);
+
+    const searchStatement = fullName && {
+      lastName: {
+        search: lastName,
+      },
+      firstName: {
+        search: firstName,
+      },
+      patronymic: {
+        search: patronymic,
+      },
+    };
+
+    const where = {
+      ...specialtyStatement,
+      ...searchStatement,
+    };
 
     const result = await this.prisma.doctor.findMany({
-      where: {
-        specialtyId,
-      },
+      where,
       orderBy: { id: 'asc' },
       take,
       skip,
-      include: {
-        specialty: true,
-      },
-      omit: {
-        specialtyId: true,
-      },
+      include: { specialty: true },
+      omit: { specialtyId: true },
     });
 
-    const count = await this.prisma.doctor.count({
-      where: { specialtyId },
-    });
+    const count = await this.prisma.doctor.count({ where });
 
     return { items: result, total: count };
   }

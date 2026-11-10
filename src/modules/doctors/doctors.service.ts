@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DoctorsRepository } from './doctors.repository.js';
 import { CreateDoctorDto } from './dto/create-doctor.dto.js';
+import { DoctorsQueryDto } from './dto/doctors-query.dto.js';
 
 @Injectable()
 export class DoctorsService {
@@ -26,15 +27,12 @@ export class DoctorsService {
     return { ...result, createdAt: new Date() };
   }
 
-  async getAll(params: {
-    specialtyId?: number;
-    page: number;
-    itemsPerPage: number;
-  }) {
-    const { specialtyId, page, itemsPerPage } = params;
+  async getAll(params: DoctorsQueryDto) {
+    const { specialty, fullName, page, itemsPerPage } = params;
 
     const { items, total } = await this.repository.getAll({
-      specialtyId,
+      specialty,
+      fullName,
       take: itemsPerPage,
       skip: itemsPerPage * (page - 1),
     });

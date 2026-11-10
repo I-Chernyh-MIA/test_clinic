@@ -54,6 +54,9 @@ model Doctor {
   price Decimal @db.Decimal(8, 2)
   slots Slot[]
 
+  @@fulltext([lastName])
+  @@fulltext([firstName])
+  @@fulltext([patronymic])
   @@map("doctors")
 }
 

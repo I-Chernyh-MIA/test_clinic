@@ -1,11 +1,16 @@
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class DoctorsQueryDto {
   @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  readonly specialtyId?: number;
+  @IsNotEmpty()
+  @IsString()
+  readonly specialty?: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  readonly fullName?: string;
 
   @IsOptional()
   @IsNumber()
