@@ -45,7 +45,14 @@ export class SlotsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getSlots(@Query() queries: GetSlotsQueryDto) {
-    return this.service.getByFilter(queries);
+  async getSlots(@Query() queries: GetSlotsQueryDto) {
+    try {
+      const result = await this.service.getByFilter(queries);
+      return result;
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new BadRequestException(e.message);
+      }
+    }
   }
 }

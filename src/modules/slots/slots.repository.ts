@@ -3,7 +3,9 @@ import { PrismaService } from '../../database/prisma.service.js';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { SlotStatus } from '../../generated/prisma/enums.js';
 import { TransactionClient } from '../../generated/prisma/internal/prismaNamespace.js';
-import { GetSlotsQueryDto } from './dto/get-slots-query.dto.js';
+import { Prisma } from '../../generated/prisma/client.js';
+import { FilteredRawSlotsDto } from './dto/filtered-raw-slots.dto.js';
+import { getISODate, getISOTime } from '../../common/libs/datetime-functions.js';
 
 @Injectable()
 export class SlotsRepository {
@@ -59,35 +61,52 @@ export class SlotsRepository {
     }
   }
 
-  async getByFilter(data: GetSlotsQueryDto) {
-    const { from, to = from, doctorId, status } = data;
+  async getByFilter(dateFrom: Date, dateTo: Date, doctorId?: number, status?: SlotStatus) {
+    const conditions: Prisma.Sql[] = [];
 
-    const items = await this.prisma.doctor.findMany({
-      where: {
-        id: doctorId,
-        slots: {
-          some: {
-            status,
-            slotDate: {
-              gte: new Date(from),
-              lte: new Date(to),
-            },
-          },
-        },
-      },
-      include: {
-        specialty: true,
-        slots: {
-          omit: {
-            doctorId: true,
-          },
-        },
-      },
-      omit: {
-        specialtyId: true,
-      },
-    });
+    if (doctorId) {
+      conditions.push(Prisma.sql`d.id = ${doctorId}`);
+    }
 
-    return { items, total: items.length };
+    if (status) {
+      conditions.push(Prisma.sql`s.status = ${status}`);
+    }
+
+    const rawItems = await this.prisma.$queryRaw<FilteredRawSlotsDto[]>`
+      SELECT
+        d.id as doctor_id,
+        d.last_name,
+        d.first_name,
+        d.patronymic,
+        d.gender,
+        d.price,
+        ds.id as specialty_id,
+        ds.name as specialty,
+        s.id as slot_id,
+        s.slot_date,
+        s.start_time,
+        s.end_time,
+        s.status,
+        s.timezone
+      FROM
+        doctors d,
+        doctor_specialties ds,
+        slots s
+      WHERE
+        d.id = s.doctor_id
+        AND d.specialty_id = ds.id
+        ${conditions.length ? Prisma.sql`AND ${Prisma.join(conditions, ' AND ')}` : Prisma.empty}
+        AND s.slot_date BETWEEN ${getISODate(dateFrom)} AND ${getISODate(dateTo)}
+        AND (
+          s.slot_date > ${getISODate()}
+          OR s.start_time >= ADDTIME(${getISOTime()}, MAKETIME(s.timezone * 60 DIV 60, s.timezone * 60 % 60, 0))
+        )
+      ORDER BY
+        d.id,
+        s.slot_date,
+        s.start_time;
+    `;
+
+    return rawItems;
   }
 }
