@@ -3,10 +3,10 @@ import { ReceptionStatus, SlotStatus } from '../../../generated/prisma/enums.js'
 import { Type } from 'class-transformer';
 
 export class GetReceptionsQueryDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  readonly patientId: number;
+  readonly patientId?: number;
 
   @IsOptional()
   @IsDateString({ strict: true, strictSeparator: true })

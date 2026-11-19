@@ -85,6 +85,7 @@ export class ReceptionsRepository {
     return this.patchReceptionStatus(id, 'confirmed');
   }
 
+  // TODO: не просто патчить, а делать это в одной транзакции, так как одномоментно используются разные сущности
   async cancel(id: number) {
     const result = await this.patchReceptionStatus(id, 'cancelled');
 
@@ -111,7 +112,7 @@ export class ReceptionsRepository {
       };
     }
 
-    const patient = await this.prisma.patient.findUnique({
+    const items = await this.prisma.patient.findMany({
       where: {
         id: patientId,
         receptions: {
@@ -145,6 +146,6 @@ export class ReceptionsRepository {
       },
     });
 
-    return patient;
+    return { items, total: items.length };
   }
 }
